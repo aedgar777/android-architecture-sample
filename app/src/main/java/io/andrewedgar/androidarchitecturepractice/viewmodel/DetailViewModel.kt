@@ -1,19 +1,27 @@
 package io.andrewedgar.androidarchitecturepractice.viewmodel
 
+import android.app.Application
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import io.andrewedgar.androidarchitecturepractice.model.Dog
+import io.andrewedgar.androidarchitecturepractice.model.DogDatabase
+import kotlinx.coroutines.launch
 
-class DetailViewModel : ViewModel() {
+class DetailViewModel (application: Application) : BaseViewModel(application) {
 
-    val dogLiveData=  MutableLiveData<Dog>()
+    val dogLiveData = MutableLiveData<Dog>()
 
 
-    fun fetch() {
+    fun fetch(dogUID: Int) {
 
-        val dog = Dog("1","Corgie","15", "breedGroup","bredfor", "temperament","")
+        launch {
+            val dao = DogDatabase(getApplication()).dogDao()
 
-        dogLiveData.value = dog
+            val dog = dao.getDog(dogUID)
+
+
+            dogLiveData.value = dog
+        }
 
 
     }

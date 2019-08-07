@@ -13,6 +13,9 @@ import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.launch
 
+
+//The entire application's context must be passed to the ViewModels, as the data needs to survive all activity
+// lifecycle changes
 class ListViewModel(application: Application) : BaseViewModel(application) {
 
 

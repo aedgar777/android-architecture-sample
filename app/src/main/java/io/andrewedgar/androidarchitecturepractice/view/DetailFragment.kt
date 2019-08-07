@@ -12,8 +12,11 @@ import androidx.navigation.Navigation
 
 import io.andrewedgar.androidarchitecturepractice.R
 import io.andrewedgar.androidarchitecturepractice.model.Dog
+import io.andrewedgar.androidarchitecturepractice.utils.getProgressDrawable
+import io.andrewedgar.androidarchitecturepractice.utils.loadImage
 import io.andrewedgar.androidarchitecturepractice.viewmodel.DetailViewModel
 import kotlinx.android.synthetic.main.fragment_detail.*
+import kotlinx.android.synthetic.main.item_dog.view.*
 
 
 class DetailFragment : Fragment() {
@@ -34,16 +37,19 @@ class DetailFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
 
-        viewModel = ViewModelProviders.of(this).get(DetailViewModel::class.java)
-        viewModel.fetch()
-
-
-        // receives data passed from the fragment that navigated to this one
-
         arguments?.let {
             dogUid = DetailFragmentArgs.fromBundle(it).dogUid
 
         }
+
+
+        viewModel = ViewModelProviders.of(this).get(DetailViewModel::class.java)
+        viewModel.fetch(dogUid)
+
+
+        // receives data passed from the fragment that navigated to this one
+
+
 
         observeViewModel()
 
@@ -59,6 +65,7 @@ class DetailFragment : Fragment() {
                 dogPurpose.text = dog.bredFor
                 dogTemperament.text = dog.temperament
                 dogLifespan.text = dog.lifespan
+                dogImage.loadImage(dog.imageUrl!!, getProgressDrawable(dogImage.context))
 
             }
 
