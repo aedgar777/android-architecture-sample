@@ -54,12 +54,12 @@ class ListFragment : Fragment() {
             dogsList.visibility= View.GONE
             listError.visibility = View.GONE
             loadingView.visibility = View.VISIBLE
-            viewModel.refresh()
+            viewModel.refreshBypassCache()
             swipeRefreshLayout.isRefreshing = false
         }
     }
 
-    fun observeViewModel(){
+    private fun observeViewModel(){
 
         //Gets new data/state for each view from ViewModel and updates them accordingly
 
