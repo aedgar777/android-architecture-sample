@@ -3,15 +3,18 @@ package io.andrewedgar.androidarchitecturepractice.view
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.databinding.DataBindingUtil
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.RecyclerView
 import io.andrewedgar.androidarchitecturepractice.R
+import io.andrewedgar.androidarchitecturepractice.databinding.ItemDogBinding
 import io.andrewedgar.androidarchitecturepractice.model.Dog
 import io.andrewedgar.androidarchitecturepractice.utils.getProgressDrawable
 import io.andrewedgar.androidarchitecturepractice.utils.loadImage
 import kotlinx.android.synthetic.main.item_dog.view.*
 
-class DogsListAdapter(val dogsList: ArrayList<Dog>) : RecyclerView.Adapter<DogsListAdapter.DogViewHolder>() {
+class DogsListAdapter(val dogsList: ArrayList<Dog>) : RecyclerView.Adapter<DogsListAdapter.DogViewHolder>(),
+    DogClickListener {
 
 
     fun updateDogList(newDogsList: List<Dog>) {
@@ -24,32 +27,48 @@ class DogsListAdapter(val dogsList: ArrayList<Dog>) : RecyclerView.Adapter<DogsL
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DogViewHolder {
 
+        //Creates ViewHolder with the ItemDogBinding as a view
+
         val inflater = LayoutInflater.from(parent.context)
-        return DogViewHolder(inflater.inflate(R.layout.item_dog, parent, false))
+
+
+        //uses a special inflater to inflate the view with databinding functionality
+
+        val view = DataBindingUtil.inflate<ItemDogBinding>(inflater, R.layout.item_dog, parent, false)
+
+
+        return DogViewHolder(view)
 
     }
 
     override fun getItemCount(): Int = dogsList.size
 
     override fun onBindViewHolder(holder: DogViewHolder, position: Int) {
-        holder.view.name.text = dogsList[position].dogBreed
-        holder.view.lifespan.text = dogsList[position].lifespan
 
-        holder.view.setOnClickListener {
+        //Assigns dog to view. Since the attributes were mapped in the xml layout file, they don't need to be assigned
+        // individually here
 
-            val action = ListFragmentDirections.actionDetailFragment()
 
-            action.dogUid = dogsList[position].uuid
-            Navigation.findNavController(it).navigate(action)
-        }
+        holder.view.dog = dogsList[position]
+        holder.view.listener = this
 
-        holder.view.imageView.loadImage(
-            dogsList[position].imageUrl!!,
-            getProgressDrawable(holder.view.imageView.context)
-        )
 
     }
 
 
-    class DogViewHolder(var view: View) : RecyclerView.ViewHolder(view)
+    override fun onDogClicked(v: View) {
+
+        //UUid now lives inside view, and can be passed here
+        val uuid = v.dogID.text.toString().toInt()
+        val action = ListFragmentDirections.actionDetailFragment()
+        action.dogUid = uuid
+        Navigation.findNavController(v).navigate(action)
+
+    }
+
+
+    //ItemDogBindingClass is generated when we drop the layout object in the item_dog layout. Since the view variable
+    // is now of type ItemDogBinding, the ViewHolder takes the root view of the binding
+
+    class DogViewHolder(var view: ItemDogBinding) : RecyclerView.ViewHolder(view.root)
 }
