@@ -6,12 +6,14 @@ import androidx.lifecycle.MutableLiveData
 import io.andrewedgar.androidarchitecturepractice.model.Dog
 import io.andrewedgar.androidarchitecturepractice.model.DogDatabase
 import io.andrewedgar.androidarchitecturepractice.utils.DogsApiService
+import io.andrewedgar.androidarchitecturepractice.utils.NotificationsHelper
 import io.andrewedgar.androidarchitecturepractice.utils.SharedPreferencesHelper
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.observers.DisposableSingleObserver
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.launch
+import java.lang.NumberFormatException
 
 
 //The entire application's context must be passed to the ViewModels, as the data needs to survive all activity
@@ -50,7 +52,24 @@ class ListViewModel(application: Application) : BaseViewModel(application) {
         }
     }
 
-    fun refreshBypassCache(){
+    private fun checkCacheDuration() {
+
+        //Get settings on cache duration from prefHelper, which got it from the preferences xml
+
+        val cachePreference = prefHelper.getCachedDuration()
+
+        try {
+            val cachePreferenceInt = cachePreference?.toInt() ?: 5 * 60
+
+
+            refreshTime =
+                cachePreferenceInt.times(1000 * 1000 * 1000L) // updates the refresh time with the user preference
+        } catch (e: NumberFormatException) {
+            e.printStackTrace()
+        }
+    }
+
+    fun refreshBypassCache() {
         fetchFromRemote()
     }
 
@@ -59,7 +78,7 @@ class ListViewModel(application: Application) : BaseViewModel(application) {
         launch {
             val dogs = DogDatabase(getApplication()).dogDao().getAllDogs()
             makeListOfRetrievedDogs(dogs)
-            Toast.makeText(getApplication(),"Dogs retrieved from Database", Toast.LENGTH_SHORT).show()
+            Toast.makeText(getApplication(), "Dogs retrieved from Database", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -78,7 +97,8 @@ class ListViewModel(application: Application) : BaseViewModel(application) {
                     override fun onSuccess(dogList: List<Dog>) {
 
                         storeDogsLocally(dogList)
-                        Toast.makeText(getApplication(),"Dogs retrieved from Database", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(getApplication(), "Dogs retrieved from Database", Toast.LENGTH_SHORT).show()
+                        NotificationsHelper(getApplication()).createNotification()
 
 
                     }

@@ -39,12 +39,16 @@ class SharedPreferencesHelper {
 
     fun saveUpdateTime(time: Long) {
 
-        prefs?.edit(commit = true){
+        prefs?.edit(commit = true) {
 
-            putLong(PREF_TIME,time)
+            putLong(PREF_TIME, time)
         }
     }
 
 
-    fun getUpdateTime()= prefs?.getLong(PREF_TIME,0)
+    fun getUpdateTime() = prefs?.getLong(PREF_TIME, 0)
+
+    //gets setting from preferences
+
+    fun getCachedDuration() = prefs?.getString("pref_cache_duration", "")
 }

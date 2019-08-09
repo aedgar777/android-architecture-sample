@@ -1,6 +1,8 @@
 package io.andrewedgar.androidarchitecturepractice.view
 
 
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -10,10 +12,15 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.Navigation
+import androidx.palette.graphics.Palette
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 
 import io.andrewedgar.androidarchitecturepractice.R
 import io.andrewedgar.androidarchitecturepractice.databinding.FragmentDetailBinding
 import io.andrewedgar.androidarchitecturepractice.model.Dog
+import io.andrewedgar.androidarchitecturepractice.model.DogPalette
 import io.andrewedgar.androidarchitecturepractice.utils.getProgressDrawable
 import io.andrewedgar.androidarchitecturepractice.utils.loadImage
 import io.andrewedgar.androidarchitecturepractice.viewmodel.DetailViewModel
@@ -23,55 +30,66 @@ import kotlinx.android.synthetic.main.item_dog.view.*
 
 class DetailFragment : Fragment() {
 
-
     private lateinit var viewModel: DetailViewModel
-    private var dogUid = 0
+    private var dogUuid = 0
 
-
-
-    private lateinit var dataBinding:FragmentDetailBinding
+    private lateinit var dataBinding: FragmentDetailBinding
+    private var sendSmsStarted = false
+    private var currentDog: Dog? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
-        dataBinding = DataBindingUtil.inflate(inflater,R.layout.fragment_detail,container,false)
-
+        setHasOptionsMenu(true)
+        dataBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_detail, container, false)
         return dataBinding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
         arguments?.let {
-            dogUid = DetailFragmentArgs.fromBundle(it).dogUid
-
+            dogUuid = DetailFragmentArgs.fromBundle(it).dogUid
         }
 
-
         viewModel = ViewModelProviders.of(this).get(DetailViewModel::class.java)
-        viewModel.fetch(dogUid)
-
-
-        // receives data passed from the fragment that navigated to this one
+        viewModel.fetch(dogUuid)
 
         observeViewModel()
-
-
     }
 
-
     private fun observeViewModel() {
-        viewModel.dogLiveData.observe(this, Observer { dog: Dog ->
-
-            dog.let {
+        viewModel.dogLiveData.observe(this, Observer { dog ->
+            currentDog = dog
+            dog?.let {
                 dataBinding.dog = dog
 
+                it.imageUrl?.let {
+                    setupBackgroundColor(it)
+                }
             }
-
         })
+    }
+
+    private fun setupBackgroundColor(url: String) {
+        Glide.with(this)
+            .asBitmap()
+            .load(url)
+            .into(object : CustomTarget<Bitmap>() {
+                override fun onLoadCleared(placeholder: Drawable?) {
+                }
+
+                override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+                    Palette.from(resource)
+                        .generate { palette ->
+                            val intColor = palette?.lightMutedSwatch?.rgb ?: 0
+                            val myPalette = DogPalette(intColor)
+                            dataBinding.palette = myPalette
+                        }
+                }
+
+            })
     }
 
 }
